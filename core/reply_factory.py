@@ -32,7 +32,12 @@ def record_current_answer(answer, current_question_id, session):
     '''
     Validates and stores the answer for the current question to django session.
     '''
-    return True, ""
+    if current_question_id is not None:
+        if "answers" not in session:
+            session["answers"] = {}
+        session["answers"][current_question_id] = answer
+        return True, ""
+    return False, "Failed to record answer."
 
 
 def get_next_question(current_question_id):
@@ -40,7 +45,11 @@ def get_next_question(current_question_id):
     Fetches the next question from the PYTHON_QUESTION_LIST based on the current_question_id.
     '''
 
-    return "dummy question", -1
+    next_question_id = current_question_id + 1
+    if next_question_id < len(PYTHON_QUESTION_LIST):
+        next_question = PYTHON_QUESTION_LIST[next_question_id]
+        return next_question, next_question_id
+    return None, None
 
 
 def generate_final_response(session):
@@ -49,4 +58,23 @@ def generate_final_response(session):
     by the user for questions in the PYTHON_QUESTION_LIST.
     '''
 
-    return "dummy result"
+    answers = session.get("answers", {})
+    score = 0
+    # Example scoring logic
+    for question_id, answer in answers.items():
+        if is_correct_answer(question_id, answer):
+            score += 1
+    total_questions = len(PYTHON_QUESTION_LIST)
+    return f"You've completed the quiz! Your score is {score}/{total_questions}."
+
+def is_correct_answer(question_id, answer):
+    '''
+    Checks if the given answer is correct for the question with the given question_id.
+    '''
+    # Example implementation
+    correct_answers = {
+        0: "correct_answer_0",
+        1: "correct_answer_1",
+        # Add correct answers for all questions
+    }
+    return correct_answers.get(question_id) == answer
